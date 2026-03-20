@@ -1,0 +1,77 @@
+name: Require PR branch to be up to date with main
+
+on:
+  pull_request:
+    branches:
+      - integration
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+# Cancel previous runs for the same PR when new commits are pushed.
+# Avoids queuing up redundant checks and saves CI minutes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check-main-merged:
+    # Skip the check entirely for draft PRs.
+    # Developers can work freely on drafts; check enforced when marked ready.
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          # fetch-depth: 0 is required. Without it, git ancestry checks
+          # like merge-base will fail or produce incorrect results because
+          # the shallow clone won't have enough commit history.
+          fetch-depth: 0
+
+      - name: Fetch main branch
+        # Ensures origin/main is available locally for the ancestry check.
+        # The checkout step alone does not guarantee origin/main is fetched.
+        run: git fetch origin main
+
+      - name: Verify PR branch contains latest main commit
+        run: |
+          MAIN_SHA=$(git rev-parse origin/main)
+          echo "Latest main SHA: $MAIN_SHA"
+
+          # Count how many commits this branch is behind main.
+          COMMITS_BEHIND=$(git rev-list HEAD..origin/main --count)
+          echo "Commits this branch is behind main: $COMMITS_BEHIND"
+
+          # merge-base --is-ancestor checks if MAIN_SHA is an ancestor of HEAD,
+          # i.e. the PR branch contains all commits from main.
+          if git merge-base --is-ancestor "$MAIN_SHA" HEAD; then
+            echo "✓ PR branch is up to date with main. Good to go."
+          else
+            echo ""
+            echo "✗ ERROR: This PR branch is $COMMITS_BEHIND commit(s) behind main."
+            echo ""
+            echo "Missing commits:"
+            git log HEAD..origin/main --oneline | head -5
+            if [ "$COMMITS_BEHIND" -gt 5 ]; then
+              echo "  ... and $((COMMITS_BEHIND - 5)) more commit(s) not shown."
+            fi
+            echo ""
+            echo "Branches must always be kept in sync with main before merging."
+            echo ""
+            echo "  Option 1 - Rebase (keeps history linear, preferred):"
+            echo "    git fetch origin"
+            echo "    git rebase origin/main"
+            echo "    git push --force-with-lease"
+            echo ""
+            echo "  Option 2 - Merge:"
+            echo "    git fetch origin"
+            echo "    git merge origin/main"
+            echo "    git push"
+            echo ""
+            echo "Once pushed, this check will re-run automatically."
+            exit 1
+          fi

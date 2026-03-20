@@ -1,0 +1,29 @@
+name: Propagate shared workflows to all repos
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'shared-workflows/check-main-merged.yml'
+  workflow_dispatch:
+
+jobs:
+  propagate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout .github repo
+        uses: actions/checkout@v4
+
+      - name: Generate token from GitHub App
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Push workflow to all matching repos
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: bash shared-workflows/scripts/propagate.sh
