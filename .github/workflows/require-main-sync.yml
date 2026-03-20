@@ -1,0 +1,38 @@
+name: Require PR branch to be up to date with main
+
+on:
+  pull_request:
+    branches:
+      - integration
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+jobs:
+  check-main-sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch main branch
+        run: |
+          git fetch origin main
+
+      - name: Verify PR branch contains latest main commit
+        run: |
+          MAIN_SHA=$(git rev-parse origin/main)
+          echo "Latest main SHA: $MAIN_SHA"
+
+          if git merge-base --is-ancestor "$MAIN_SHA" HEAD; then
+            echo "PR branch is up to date with main."
+          else
+            echo "PR branch is NOT up to date with main."
+            echo "Please merge or rebase main into this branch before merging into integration."
+            exit 1
+          fi
