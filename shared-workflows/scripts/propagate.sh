@@ -7,7 +7,7 @@ DEST_PATH=".github/workflows/check-main-merged.yml"
 # before the pattern filter is applied.
 # --no-archived skips read-only archived repos which would fail the API call.
 REPOS=$(gh repo list $ORG --limit 1000 --no-archived --json name \
-  -q '.[].name | select(startswith("api-sync") or startswith("mfe-btoptimize"))')
+  -q '.[].name | select(startswith("api-auths") or startswith("mfe-tictactoe"))')
 
 TOTAL=$(echo "$REPOS" | wc -l | tr -d ' ')
 echo "Repos matched (api-* and mfe-*): $TOTAL"
@@ -28,11 +28,12 @@ for REPO in $REPOS; do
 
   if [ -z "$SHA" ]; then
     # File doesn't exist — create it.
+    # [skip ci] prevents CircleCI from triggering a deployment on this commit.
     if gh api \
       --method PUT \
       -H "Accept: application/vnd.github+json" \
       /repos/$ORG/$REPO/contents/$DEST_PATH \
-      --field message="chore: add main-sync validation workflow" \
+      --field message="chore: add main-sync validation workflow [skip ci]" \
       --field content="$(base64 -w 0 $WORKFLOW_FILE)" \
       --field branch="main" > /dev/null 2>&1; then
       echo "  ✓ Created"
@@ -43,11 +44,12 @@ for REPO in $REPOS; do
     fi
   else
     # File exists — update it using the existing sha.
+    # [skip ci] prevents CircleCI from triggering a deployment on this commit.
     if gh api \
       --method PUT \
       -H "Accept: application/vnd.github+json" \
       /repos/$ORG/$REPO/contents/$DEST_PATH \
-      --field message="chore: update main-sync validation workflow" \
+      --field message="chore: update main-sync validation workflow [skip ci]" \
       --field content="$(base64 -w 0 $WORKFLOW_FILE)" \
       --field sha="$SHA" \
       --field branch="main" > /dev/null 2>&1; then
