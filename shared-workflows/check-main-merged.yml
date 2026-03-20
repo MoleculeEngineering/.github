@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check-main-sync:
+  check-main-merged:
     # Skip the check entirely for draft PRs.
     # Developers can work freely on drafts; check enforced when marked ready.
     if: github.event.pull_request.draft == false
