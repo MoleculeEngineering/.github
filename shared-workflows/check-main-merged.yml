@@ -1,4 +1,4 @@
-name: Require PR branch to be up to date with main 
+name: Require PR branch to be up to date with main
 
 on:
   pull_request:
