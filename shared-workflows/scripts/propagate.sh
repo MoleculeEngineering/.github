@@ -7,7 +7,7 @@ DEST_PATH=".github/workflows/check-main-merged.yml"
 # before the pattern filter is applied.
 # --no-archived skips read-only archived repos which would fail the API call.
 REPOS=$(gh repo list $ORG --limit 1000 --no-archived --json name \
-  -q '.[].name | select(startswith("api-auths") or startswith("mfe-tictactoe"))')
+  -q '.[].name | select(startswith("api-") or startswith("mfe-"))')
 
 TOTAL=$(echo "$REPOS" | wc -l | tr -d ' ')
 echo "Repos matched (api-* and mfe-*): $TOTAL"
