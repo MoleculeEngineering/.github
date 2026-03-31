@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'shared-workflows/check-main-merged.yml'
+      - 'shared-workflows/merge-to-main.yml'
   workflow_dispatch:
 
 jobs:
