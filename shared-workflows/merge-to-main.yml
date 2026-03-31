@@ -1,0 +1,23 @@
+name: Validate integration and hotfix* can merge to main
+
+on:
+  pull_request_target:
+    branches:
+      - main
+
+jobs:
+  merge-to-main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check source branch name
+        run: |
+          SOURCE="${{ github.head_ref }}"
+          echo "Source branch: $SOURCE"
+
+          if [[ "$SOURCE" == "integration" ]] || \
+             [[ "$SOURCE" =~ ^hotfix.+$ ]]; then
+            echo "$SOURCE branch can merge into main branch"
+          else
+            echo "ERROR: PRs to main are only allowed from 'integration' or 'hotfix*'"
+            exit 1
+          fi
