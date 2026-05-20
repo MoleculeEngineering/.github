@@ -8,7 +8,7 @@ DEST_PATH=".github/workflows/check-main-merged.yml"
 # --no-archived skips read-only archived repos which would fail the API call. Running for mfe repos
 # REPOS=$(gh repo list $ORG --limit 1000 --no-archived --json name \
 #  -q '[.[].name | select(startswith("mfe-"))][]')
-REPOS="mfe-alreport-wc mfe-aluser-wc mfe-alproject-wc mfe-alpg-wc mfe-aa-wc-wrapper mfe-alheader-wc"
+REPOS="mfe-alreport-wc mfe-aluser-wc mfe-alproject-wc mfe-aa-wc-wrapper mfe-alheader-wc"
 
 TOTAL=$(echo "$REPOS" | wc -l | tr -d ' ')
 echo "Repos matched (api-* and mfe-*): $TOTAL"
