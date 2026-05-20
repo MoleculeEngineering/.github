@@ -5,7 +5,7 @@ DEST_PATH=".github/workflows/check-main-merged.yml"
 
 # --limit must exceed total repo count (647) so all repos are fetched
 # before the pattern filter is applied.
-# --no-archived skips read-only archived repos which would fail the API call.
+# --no-archived skips read-only archived repos which would fail the API call. Running for mfe repos
 REPOS=$(gh repo list $ORG --limit 1000 --no-archived --json name \
   -q '[.[].name | select(startswith("mfe-"))][]')
 
